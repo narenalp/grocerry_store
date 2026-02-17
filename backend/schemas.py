@@ -32,10 +32,28 @@ class SignupRequest(BaseModel):
     # Password Strength Validator
     @validator('password')
     def validate_password(cls, v):
-        regex = r"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-        if not re.match(regex, v):
-            raise ValueError('Password must be 8+ chars, contain 1 uppercase, 1 number, and 1 special char')
+        # Allow simple passwords in development if needed, 
+        # but the user requested to "Solve This Error" implying they want to know why it's failing
+        errors = []
+        if len(v) < 8:
+            errors.append("at least 8 characters")
+        if not any(c.isupper() for c in v):
+            errors.append("one uppercase letter")
+        if not any(c.isdigit() for c in v):
+            errors.append("one number")
+        if not any(not c.isalnum() for c in v):
+            errors.append("one special character (@, $, !, %, *, ?, &, etc.)")
+        
+        if errors:
+            raise ValueError(f"Password missing: {', '.join(errors)}")
         return v
+    
+    @validator('store_code', 'registration_number', pre=True)
+    def validate_optional_fields(cls, v):
+        """Convert empty string to None"""
+        if v == '' or v is None:
+            return None
+        return str(v).strip() if v else None
 
 class AuthResponse(BaseModel):
     user_id: int

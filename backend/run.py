@@ -3,7 +3,7 @@ Production server runner
 Usage: python run.py
 """
 import uvicorn
-from config import settings
+from settings import settings
 
 if __name__ == "__main__":
     uvicorn.run(

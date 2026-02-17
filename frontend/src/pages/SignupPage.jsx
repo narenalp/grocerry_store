@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Box, Button, TextField, Typography, Container, Paper, Grid, Link, 
-  Alert, CircularProgress, Checkbox, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel 
+import {
+  Box, Button, TextField, Typography, Container, Paper, Grid, Link,
+  Alert, CircularProgress, Checkbox, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel
 } from '@mui/material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
@@ -12,9 +12,9 @@ const SignupPage = () => {
 
   // Initial State matching API requirements
   const [formData, setFormData] = useState({
-    store_name: '', store_code: '', contact_phone: '', 
+    store_name: '', store_code: '', contact_phone: '',
     address: '', city: '', state: '', registration_number: '',
-    first_name: '', last_name: '', email: '', 
+    first_name: '', last_name: '', email: '',
     password: '', confirm_password: '',
     plan_id: 'basic',
     terms_accepted: false
@@ -41,7 +41,7 @@ const SignupPage = () => {
     try {
       // Exclude confirm_password before sending
       const { confirm_password, ...signupData } = formData;
-      
+
       const response = await fetch('http://127.0.0.1:8000/api/v1/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,14 +49,21 @@ const SignupPage = () => {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Registration failed');
+      if (!response.ok) {
+        // Handle Pydantic validation errors nicely
+        if (data.detail && Array.isArray(data.detail)) {
+          const errorMsgs = data.detail.map(err => err.message).join('. ');
+          throw new Error(errorMsgs || 'Validation failed');
+        }
+        throw new Error(data.detail || data.message || 'Registration failed');
+      }
 
       // Success: Save token and redirect
       localStorage.setItem('token', data.access_token);
       navigate('/dashboard');
 
     } catch (err) {
-      setError(err.message);
+      setError(err.message.replace('Value error, ', '')); // Clean up Pydantic prefix
     } finally {
       setLoading(false);
     }
@@ -77,10 +84,10 @@ const SignupPage = () => {
 
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              
+
               {/* SECTION 1: STORE DETAILS */}
               <Grid item xs={12}><Typography variant="h6" color="primary">Store Information</Typography></Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <TextField required fullWidth label="Store Name" name="store_name" onChange={handleChange} />
               </Grid>
@@ -105,7 +112,7 @@ const SignupPage = () => {
 
               {/* SECTION 2: OWNER DETAILS */}
               <Grid item xs={12} sx={{ mt: 2 }}><Typography variant="h6" color="primary">Owner Details</Typography></Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <TextField required fullWidth label="First Name" name="first_name" onChange={handleChange} />
               </Grid>
@@ -116,7 +123,7 @@ const SignupPage = () => {
                 <TextField required fullWidth type="email" label="Email Address" name="email" onChange={handleChange} />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField required fullWidth type="password" label="Password" name="password" onChange={handleChange} helperText="Min 8 chars, 1 Upper, 1 Special" />
+                <TextField required fullWidth type="password" label="Password" name="password" onChange={handleChange} helperText="Min 8 chars, 1 Upper, 1 Number, 1 Special" />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField required fullWidth type="password" label="Confirm Password" name="confirm_password" onChange={handleChange} />

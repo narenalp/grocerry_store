@@ -83,6 +83,8 @@ class Product(Base):
     
     tenant_id = Column(Integer, ForeignKey("tenants.id"))
     tenant = relationship("Tenant", back_populates="products")
+    
+    is_active = Column(Boolean, default=True)
    
 # ... existing imports ...
 

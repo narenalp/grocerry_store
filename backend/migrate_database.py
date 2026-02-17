@@ -8,9 +8,14 @@ This script migrates the database schema to support:
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import sessionmaker
 import database
+import models
 
 def migrate_database():
     """Run database migrations"""
+    # 0. Ensure all base tables exist first
+    print("Initializing base tables...")
+    models.Base.metadata.create_all(bind=database.engine)
+    
     engine = database.engine
     inspector = inspect(engine)
     
@@ -145,6 +150,15 @@ def migrate_database():
                 print("✓ Products table migration complete")
             else:
                 print("✓ Products table already has category_id column")
+            
+            # Check for is_active column in products
+            if 'is_active' not in products_columns:
+                print("Adding is_active column to products...")
+                conn.execute(text("""
+                    ALTER TABLE products 
+                    ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+                """))
+                print("✓ Added is_active column to products")
             
             # 4. Check and update transactions table
             if 'transactions' in inspector.get_table_names():

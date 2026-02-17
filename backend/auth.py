@@ -8,7 +8,7 @@ import models
 import database
 
 # Import settings
-from config import settings
+from settings import settings
 
 # CONFIGURATION - Now loaded from environment variables
 SECRET_KEY = settings.SECRET_KEY

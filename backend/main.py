@@ -21,7 +21,7 @@ import schemas
 import utils
 import database
 import auth
-from config import settings
+from settings import settings
 
 # 1. Initialize Database Tables
 # This creates the tables in PostgreSQL if they don't exist
@@ -281,7 +281,10 @@ def get_products(
     Get all products belonging to the logged-in user's store (Tenant).
     Optionally filter by barcode.
     """
-    query = db.query(models.Product).filter(models.Product.tenant_id == current_user.tenant_id)
+    query = db.query(models.Product).filter(
+        models.Product.tenant_id == current_user.tenant_id,
+        models.Product.is_active == True
+    )
     
     # Filter by barcode if provided
     if barcode:
@@ -410,9 +413,10 @@ def delete_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    db.delete(product)
+    # Soft delete: Set is_active to False instead of deleting from DB
+    product.is_active = False
     db.commit()
-    return {"message": "Product deleted successfully"}
+    return {"message": "Product deleted successfully (soft delete)"}
 
 @app.get("/api/v1/products/by-barcode/{barcode}", response_model=schemas.ProductResponse)
 def get_product_by_barcode(
@@ -423,7 +427,8 @@ def get_product_by_barcode(
     """Get a product by barcode - useful for barcode scanner."""
     product = db.query(models.Product).filter(
         models.Product.barcode == barcode,
-        models.Product.tenant_id == current_user.tenant_id
+        models.Product.tenant_id == current_user.tenant_id,
+        models.Product.is_active == True
     ).first()
     
     if not product:
