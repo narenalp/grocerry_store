@@ -10,3 +10,4 @@ whitenoise==6.11.0
 pydantic-settings
 uvicorn
 fastapi
+sqlalchemy
