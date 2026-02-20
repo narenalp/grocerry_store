@@ -44,7 +44,7 @@ const CategoriesPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      const res = await fetch('http://127.0.0.1:8000/api/v1/categories', {
+      const res = await fetch('${import.meta.env.VITE_API_URL}/api/v1/categories', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       
