@@ -22,6 +22,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
+import API_URL from '../config';
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
@@ -44,12 +45,12 @@ const CategoriesPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      const res = await fetch('${import.meta.env.VITE_API_URL}/api/v1/categories', {
+      const res = await fetch(`${API_URL}/api/v1/categories`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
+
       if (!res.ok) throw new Error('Failed to fetch categories');
-      
+
       const data = await res.json();
       setCategories(data);
     } catch (err) {
@@ -98,8 +99,8 @@ const CategoriesPage = () => {
 
     const token = localStorage.getItem('token');
     const url = editingCategory
-      ? `http://127.0.0.1:8000/api/v1/categories/${editingCategory.id}`
-      : 'http://127.0.0.1:8000/api/v1/categories';
+      ? `${API_URL}/api/v1/categories/${editingCategory.id}`
+      : `${API_URL}/api/v1/categories`;
     const method = editingCategory ? 'PUT' : 'POST';
 
     try {
@@ -113,15 +114,15 @@ const CategoriesPage = () => {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.detail || 'Failed to save category');
       }
 
-      setNotification({ 
-        open: true, 
-        message: editingCategory ? 'Category updated successfully!' : 'Category added successfully!', 
-        severity: 'success' 
+      setNotification({
+        open: true,
+        message: editingCategory ? 'Category updated successfully!' : 'Category added successfully!',
+        severity: 'success'
       });
       handleCloseDialog();
       fetchCategories();
@@ -135,7 +136,7 @@ const CategoriesPage = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/categories/${id}`, {
+      const res = await fetch(`${API_URL}/api/v1/categories/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

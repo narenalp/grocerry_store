@@ -31,6 +31,7 @@ import {
   CalendarToday,
   Visibility,
 } from '@mui/icons-material';
+import API_URL from '../config';
 
 const ReportsPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -50,23 +51,23 @@ const ReportsPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      
+
       // Fetch transactions
-      const txnRes = await fetch('http://127.0.0.1:8000/api/v1/transactions?limit=100', {
+      const txnRes = await fetch(`${API_URL}/api/v1/transactions?limit=100`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const txnData = await txnRes.json();
       setTransactions(txnData);
 
       // Fetch analytics
-      const analyticsRes = await fetch(`http://127.0.0.1:8000/api/v1/analytics/sales?days=${daysFilter}`, {
+      const analyticsRes = await fetch(`${API_URL}/api/v1/analytics/sales?days=${daysFilter}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const analyticsData = await analyticsRes.json();
       setAnalytics(analyticsData);
 
       // Fetch dashboard stats
-      const statsRes = await fetch('http://127.0.0.1:8000/api/v1/analytics/dashboard', {
+      const statsRes = await fetch(`${API_URL}/api/v1/analytics/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const statsData = await statsRes.json();
@@ -81,7 +82,7 @@ const ReportsPage = () => {
   const handleViewTransaction = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/transactions/${id}`, {
+      const res = await fetch(`${API_URL}/api/v1/transactions/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
@@ -285,8 +286,8 @@ const ReportsPage = () => {
                     <TableCell>#{transaction.id}</TableCell>
                     <TableCell>{formatDate(transaction.created_at)}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={transaction.payment_method.toUpperCase()} 
+                      <Chip
+                        label={transaction.payment_method.toUpperCase()}
                         size="small"
                         color={transaction.payment_method === 'cash' ? 'success' : 'primary'}
                       />

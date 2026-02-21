@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, Grid, Paper, Typography, Card, CardContent, CardActionArea, 
+import {
+  Box, Grid, Paper, Typography, Card, CardContent, CardActionArea,
   Avatar, Divider, CircularProgress, Alert, Link
 } from '@mui/material';
-import { 
-  ShoppingCartCheckout, Inventory, People, TrendingUp, Warning 
+import {
+  ShoppingCartCheckout, Inventory, People, TrendingUp, Warning
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -23,12 +24,12 @@ const DashboardPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      const res = await fetch('http://127.0.0.1:8000/api/v1/analytics/dashboard', {
+      const res = await fetch(`${API_URL}/api/v1/analytics/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
+
       if (!res.ok) throw new Error('Failed to fetch dashboard stats');
-      
+
       const data = await res.json();
       setStats(data);
     } catch (err) {
@@ -47,31 +48,31 @@ const DashboardPage = () => {
 
   // Quick Action Cards Data
   const actions = [
-    { 
-      title: "Start Sale (POS)", 
-      icon: <ShoppingCartCheckout sx={{ fontSize: 40 }} />, 
-      color: "#1976d2", 
+    {
+      title: "Start Sale (POS)",
+      icon: <ShoppingCartCheckout sx={{ fontSize: 40 }} />,
+      color: "#1976d2",
       path: "/pos",
       desc: "Open the billing terminal"
     },
-    { 
-      title: "Manage Inventory", 
-      icon: <Inventory sx={{ fontSize: 40 }} />, 
-      color: "#2e7d32", 
+    {
+      title: "Manage Inventory",
+      icon: <Inventory sx={{ fontSize: 40 }} />,
+      color: "#2e7d32",
       path: "/inventory",
       desc: "Add or edit products"
     },
-    { 
-      title: "Customer Database", 
-      icon: <People sx={{ fontSize: 40 }} />, 
-      color: "#ed6c02", 
+    {
+      title: "Customer Database",
+      icon: <People sx={{ fontSize: 40 }} />,
+      color: "#ed6c02",
       path: "/customers", // Placeholder path
       desc: "View registered customers"
     },
-    { 
-      title: "Sales Reports", 
-      icon: <TrendingUp sx={{ fontSize: 40 }} />, 
-      color: "#9c27b0", 
+    {
+      title: "Sales Reports",
+      icon: <TrendingUp sx={{ fontSize: 40 }} />,
+      color: "#9c27b0",
       path: "/reports", // Placeholder path
       desc: "View daily revenue"
     }
@@ -170,9 +171,9 @@ const DashboardPage = () => {
       {/* Quick Stats Link */}
       {stats && (
         <Box sx={{ mb: 3, textAlign: 'right' }}>
-          <Link 
-            component="button" 
-            variant="body2" 
+          <Link
+            component="button"
+            variant="body2"
             onClick={() => navigate('/reports')}
             sx={{ textDecoration: 'none' }}
           >
@@ -188,16 +189,16 @@ const DashboardPage = () => {
       <Grid container spacing={3}>
         {actions.map((action, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card 
+            <Card
               elevation={3}
-              sx={{ 
-                height: '100%', 
-                transition: 'transform 0.2s', 
-                '&:hover': { transform: 'translateY(-5px)' } 
+              sx={{
+                height: '100%',
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'translateY(-5px)' }
               }}
             >
-              <CardActionArea 
-                onClick={() => navigate(action.path)} 
+              <CardActionArea
+                onClick={() => navigate(action.path)}
                 sx={{ height: '100%', p: 2 }}
               >
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>

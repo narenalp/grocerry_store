@@ -27,6 +27,7 @@ import {
   InputLabel,
 } from '@mui/material';
 import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import API_URL from '../config';
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
@@ -60,21 +61,21 @@ const InventoryPage = () => {
     if (e.key === 'Enter' && barcodeSearch.trim()) {
       e.preventDefault();
       const token = localStorage.getItem('token');
-      
+
       try {
         // Try to find product by barcode
-        const res = await fetch(`http://127.0.0.1:8000/api/v1/products/by-barcode/${encodeURIComponent(barcodeSearch.trim())}`, {
+        const res = await fetch(`${API_URL}/api/v1/products/by-barcode/${encodeURIComponent(barcodeSearch.trim())}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (res.ok) {
           const product = await res.json();
           handleOpenDialog(product);
           setBarcodeSearch('');
-          setNotification({ 
-            open: true, 
-            message: `Found: ${product.name}`, 
-            severity: 'success' 
+          setNotification({
+            open: true,
+            message: `Found: ${product.name}`,
+            severity: 'success'
           });
         } else {
           // Product not found - open dialog to create new product with barcode pre-filled
@@ -90,17 +91,17 @@ const InventoryPage = () => {
           setEditingProduct(null);
           setOpenDialog(true);
           setBarcodeSearch('');
-          setNotification({ 
-            open: true, 
-            message: 'Product not found. Creating new product with this barcode.', 
-            severity: 'info' 
+          setNotification({
+            open: true,
+            message: 'Product not found. Creating new product with this barcode.',
+            severity: 'info'
           });
         }
       } catch (err) {
-        setNotification({ 
-          open: true, 
-          message: 'Error looking up product', 
-          severity: 'error' 
+        setNotification({
+          open: true,
+          message: 'Error looking up product',
+          severity: 'error'
         });
       }
     }
@@ -110,12 +111,12 @@ const InventoryPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      const res = await fetch('http://127.0.0.1:8000/api/v1/products', {
+      const res = await fetch(`${API_URL}/api/v1/products`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
+
       if (!res.ok) throw new Error('Failed to fetch products');
-      
+
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -128,10 +129,10 @@ const InventoryPage = () => {
   const fetchCategories = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/categories', {
+      const res = await fetch(`${API_URL}/api/v1/categories`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -203,12 +204,12 @@ const InventoryPage = () => {
     }
 
     const token = localStorage.getItem('token');
-    let url = 'http://127.0.0.1:8000/api/v1/products';
+    let url = `${API_URL}/api/v1/products`;
     let method = 'POST';
 
     // If editing, use PUT method
     if (editingProduct) {
-      url = `http://127.0.0.1:8000/api/v1/products/${editingProduct.id}`;
+      url = `${API_URL}/api/v1/products/${editingProduct.id}`;
       method = 'PUT';
     }
 
@@ -217,8 +218,8 @@ const InventoryPage = () => {
       const payload = {
         name: formData.name.trim(),
         barcode: formData.barcode && formData.barcode.trim() ? formData.barcode.trim() : null,
-        category_id: (formData.category_id === null || formData.category_id === '' || formData.category_id === undefined) 
-          ? null 
+        category_id: (formData.category_id === null || formData.category_id === '' || formData.category_id === undefined)
+          ? null
           : (typeof formData.category_id === 'number' ? formData.category_id : parseInt(formData.category_id)),
         cost_price: typeof formData.cost_price === 'number' ? formData.cost_price : parseFloat(formData.cost_price) || 0.0,
         selling_price: typeof formData.selling_price === 'number' ? formData.selling_price : parseFloat(formData.selling_price) || 0.0,
@@ -236,15 +237,15 @@ const InventoryPage = () => {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.detail || 'Failed to save product');
       }
 
-      setNotification({ 
-        open: true, 
-        message: editingProduct ? 'Product updated successfully!' : 'Product added successfully!', 
-        severity: 'success' 
+      setNotification({
+        open: true,
+        message: editingProduct ? 'Product updated successfully!' : 'Product added successfully!',
+        severity: 'success'
       });
       handleCloseDialog();
       fetchProducts();
@@ -258,7 +259,7 @@ const InventoryPage = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/v1/products/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -297,7 +298,7 @@ const InventoryPage = () => {
             onChange={(e) => setBarcodeSearch(e.target.value)}
             onKeyDown={handleBarcodeSearch}
             inputRef={(ref) => setBarcodeInputRef(ref)}
-            sx={{ 
+            sx={{
               minWidth: 300,
               bgcolor: '#e3f2fd',
               '& .MuiOutlinedInput-root': {
@@ -354,8 +355,8 @@ const InventoryPage = () => {
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.barcode || '-'}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={product.category_name || 'Uncategorized'} 
+                        <Chip
+                          label={product.category_name || 'Uncategorized'}
                           size="small"
                           color={product.category_name ? 'primary' : 'default'}
                         />

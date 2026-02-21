@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Box, Button, TextField, Typography, Container, Paper, Checkbox, 
-  FormControlLabel, Link, Alert, CircularProgress 
+import {
+  Box, Button, TextField, Typography, Container, Paper, Checkbox,
+  FormControlLabel, Link, Alert, CircularProgress
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import API_URL from '../config';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,7 +29,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+      const response = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -42,10 +43,10 @@ const LoginPage = () => {
 
       // Store Token
       localStorage.setItem('token', data.access_token);
-      
+
       // Store User Info (Optional, useful for displaying "Welcome Name")
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       navigate('/dashboard');
 
     } catch (err) {
@@ -59,11 +60,11 @@ const LoginPage = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5' }}>
       <Container maxWidth="xs">
         <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          
+
           <Box sx={{ m: 1, bgcolor: 'secondary.main', p: 1, borderRadius: '50%' }}>
             <LockOutlinedIcon sx={{ color: 'white' }} />
           </Box>
-          
+
           <Typography component="h1" variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
             Sign in to GroceryPOS
           </Typography>
@@ -83,7 +84,7 @@ const LoginPage = () => {
               id="password" autoComplete="current-password"
               onChange={handleChange}
             />
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
               <FormControlLabel
                 control={<Checkbox name="remember_me" color="primary" onChange={handleChange} />}
@@ -101,7 +102,7 @@ const LoginPage = () => {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
             </Button>
-            
+
             <Box textAlign="center">
               <Link component={RouterLink} to="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}

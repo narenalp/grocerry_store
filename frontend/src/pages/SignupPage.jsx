@@ -4,6 +4,7 @@ import {
   Alert, CircularProgress, Checkbox, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel
 } from '@mui/material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import API_URL from '../config';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const SignupPage = () => {
       // Exclude confirm_password before sending
       const { confirm_password, ...signupData } = formData;
 
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/signup', {
+      const response = await fetch(`${API_URL}/api/v1/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(signupData),

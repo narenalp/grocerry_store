@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Box, Grid, Paper, TextField, Typography, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, IconButton, Button, Divider, 
+import {
+  Box, Grid, Paper, TextField, Typography, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, IconButton, Button, Divider,
   List, ListItem, ListItemText, Alert, Snackbar, Autocomplete, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import { Delete, Add, Remove, Search, ReceiptLong, Print, Person, LocalOffer } from '@mui/icons-material';
+import API_URL from '../config';
 
 const PosPage = () => {
   // State
@@ -34,13 +35,13 @@ const PosPage = () => {
 
   // Focus scanner input on load
   useEffect(() => {
-    if(barcodeInputRef.current) barcodeInputRef.current.focus();
+    if (barcodeInputRef.current) barcodeInputRef.current.focus();
   }, []);
 
   const fetchProducts = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/products', {
+      const res = await fetch(`${API_URL}/api/v1/products`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -53,7 +54,7 @@ const PosPage = () => {
   const fetchCustomers = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/customers', {
+      const res = await fetch(`${API_URL}/api/v1/customers`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -69,20 +70,20 @@ const PosPage = () => {
   const handleScan = async (e) => {
     if (e.key === 'Enter' && barcode.trim()) {
       e.preventDefault();
-      
+
       // Try to find product by barcode first (fastest for barcode scanner)
       let product = products.find(p => p.barcode && p.barcode.trim() === barcode.trim());
-      
+
       // If not found by barcode, try by name
       if (!product) {
         product = products.find(p => p.name.toLowerCase() === barcode.toLowerCase());
       }
-      
+
       // If still not found, try API lookup (in case product was just added)
       if (!product) {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://127.0.0.1:8000/api/v1/products/by-barcode/${encodeURIComponent(barcode.trim())}`, {
+          const res = await fetch(`${API_URL}/api/v1/products/by-barcode/${encodeURIComponent(barcode.trim())}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
@@ -94,27 +95,27 @@ const PosPage = () => {
           console.error("Barcode lookup error:", err);
         }
       }
-      
+
       if (product) {
         // Check stock before adding
         if (product.stock_quantity <= 0) {
-          setNotification({ 
-            open: true, 
-            message: `${product.name} is out of stock!`, 
-            severity: 'warning' 
+          setNotification({
+            open: true,
+            message: `${product.name} is out of stock!`,
+            severity: 'warning'
           });
         } else if (product.stock_quantity < cart.find(item => item.id === product.id)?.quantity + 1 || 1) {
           const currentQty = cart.find(item => item.id === product.id)?.quantity || 0;
           if (currentQty >= product.stock_quantity) {
-            setNotification({ 
-              open: true, 
-              message: `Only ${product.stock_quantity} units available!`, 
-              severity: 'warning' 
+            setNotification({
+              open: true,
+              message: `Only ${product.stock_quantity} units available!`,
+              severity: 'warning'
             });
             return;
           }
         }
-        
+
         addToCart(product);
         setBarcode(''); // Clear input for next scan
         // Visual feedback - input briefly highlights
@@ -127,10 +128,10 @@ const PosPage = () => {
           }, 200);
         }
       } else {
-        setNotification({ 
-          open: true, 
-          message: `Product not found for barcode: ${barcode}`, 
-          severity: 'error' 
+        setNotification({
+          open: true,
+          message: `Product not found for barcode: ${barcode}`,
+          severity: 'error'
         });
         setBarcode(''); // Clear for next scan
       }
@@ -139,9 +140,9 @@ const PosPage = () => {
 
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
+
     if (existingItem) {
-      setCart(cart.map(item => 
+      setCart(cart.map(item =>
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
       ));
     } else {
@@ -166,7 +167,7 @@ const PosPage = () => {
   // 3. Calculation
   const subtotal = cart.reduce((acc, item) => acc + (item.selling_price * item.quantity), 0);
   const tax = subtotal * 0.05; // Assuming 5% tax for now
-  
+
   // Calculate discount
   let discountAmount = 0;
   if (discountType && discountValue) {
@@ -176,7 +177,7 @@ const PosPage = () => {
       discountAmount = Math.min(parseFloat(discountValue), subtotal);
     }
   }
-  
+
   const total = subtotal + tax - discountAmount;
 
   // 4. Checkout Logic
@@ -199,21 +200,21 @@ const PosPage = () => {
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/transactions/create', {
+      const res = await fetch(`${API_URL}/api/v1/transactions/create`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.detail || "Transaction failed");
 
       // Fetch transaction details for receipt
-      const txnRes = await fetch(`http://127.0.0.1:8000/api/v1/transactions/${data.id}/receipt`, {
+      const txnRes = await fetch(`${API_URL}/api/v1/transactions/${data.id}/receipt`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (txnRes.ok) {
@@ -246,7 +247,7 @@ const PosPage = () => {
 
   const generateReceiptHTML = (transaction) => {
     if (!transaction) return '';
-    
+
     return `
       <!DOCTYPE html>
       <html>
@@ -316,16 +317,16 @@ const PosPage = () => {
   return (
     <Box sx={{ flexGrow: 1, height: '85vh', overflow: 'hidden' }}>
       <Grid container spacing={2} sx={{ height: '100%' }}>
-        
+
         {/* LEFT COLUMN: Search & Scan */}
         <Grid item xs={12} md={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>Product Search</Typography>
-            
+
             {/* Scanner Input */}
-            <TextField 
+            <TextField
               inputRef={barcodeInputRef}
-              fullWidth label="Scan Barcode / SKU" variant="outlined" 
+              fullWidth label="Scan Barcode / SKU" variant="outlined"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
               onKeyDown={handleScan}
@@ -334,21 +335,21 @@ const PosPage = () => {
             />
 
             {/* Manual Search */}
-            <TextField 
+            <TextField
               fullWidth label="Search by Name" variant="outlined" size="small"
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setFilteredProducts(products.filter(p => p.name.toLowerCase().includes(e.target.value.toLowerCase())));
               }}
             />
-            
+
             {/* Search Results List */}
             <List sx={{ flexGrow: 1, overflow: 'auto', mt: 1 }}>
               {(searchQuery ? filteredProducts : products).slice(0, 10).map((product) => (
                 <ListItem button key={product.id} onClick={() => addToCart(product)} divider>
-                  <ListItemText 
-                    primary={product.name} 
-                    secondary={`$${product.selling_price} | Stock: ${product.stock_quantity}`} 
+                  <ListItemText
+                    primary={product.name}
+                    secondary={`$${product.selling_price} | Stock: ${product.stock_quantity}`}
                   />
                   <Add color="primary" fontSize="small" />
                 </ListItem>
@@ -410,7 +411,7 @@ const PosPage = () => {
         <Grid item xs={12} md={3} sx={{ height: '100%' }}>
           <Paper elevation={3} sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#fafafa' }}>
             <Typography variant="h6" gutterBottom>Payment Summary</Typography>
-            
+
             {/* Customer Selection */}
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -435,7 +436,7 @@ const PosPage = () => {
                 )}
               />
               {selectedCustomer && (
-                <Chip 
+                <Chip
                   label={`${selectedCustomer.name} - ${selectedCustomer.loyalty_points} pts`}
                   size="small"
                   onDelete={() => setSelectedCustomer(null)}
@@ -484,7 +485,7 @@ const PosPage = () => {
                 </Grid>
               </Grid>
               {discountAmount > 0 && (
-                <Chip 
+                <Chip
                   label={`Discount: -$${discountAmount.toFixed(2)}`}
                   size="small"
                   color="success"
@@ -496,7 +497,7 @@ const PosPage = () => {
                 />
               )}
             </Box>
-            
+
             <Box sx={{ my: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>Subtotal</Typography>
@@ -520,22 +521,22 @@ const PosPage = () => {
             </Box>
 
             <Box sx={{ mt: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button 
-                variant="contained" color="success" size="large" fullWidth 
+              <Button
+                variant="contained" color="success" size="large" fullWidth
                 onClick={() => handleCheckout('cash')}
                 disabled={cart.length === 0 || loading}
               >
                 PAY CASH
               </Button>
-              <Button 
+              <Button
                 variant="contained" color="primary" size="large" fullWidth
                 onClick={() => handleCheckout('card')}
                 disabled={cart.length === 0 || loading}
               >
                 PAY CARD
               </Button>
-              <Button 
-                variant="outlined" color="error" fullWidth 
+              <Button
+                variant="outlined" color="error" fullWidth
                 onClick={() => setCart([])}
               >
                 CANCEL
@@ -544,9 +545,9 @@ const PosPage = () => {
           </Paper>
         </Grid>
       </Grid>
-      
+
       {/* Notification Toast */}
-      <Snackbar open={notification.open} autoHideDuration={3000} onClose={() => setNotification({...notification, open: false})}>
+      <Snackbar open={notification.open} autoHideDuration={3000} onClose={() => setNotification({ ...notification, open: false })}>
         <Alert severity={notification.severity} variant="filled">{notification.message}</Alert>
       </Snackbar>
 
@@ -604,8 +605,8 @@ const PosPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setReceiptDialogOpen(false)}>Close</Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<Print />}
             onClick={handlePrintReceipt}
           >

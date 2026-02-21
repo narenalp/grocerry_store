@@ -24,6 +24,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Add, Edit, Delete, Search, Phone, Email, LocationOn } from '@mui/icons-material';
+import API_URL from '../config';
 
 const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
@@ -51,16 +52,16 @@ const CustomersPage = () => {
     const token = localStorage.getItem('token');
     try {
       setLoading(true);
-      const url = searchQuery 
-        ? `http://127.0.0.1:8000/api/v1/customers?search=${encodeURIComponent(searchQuery)}`
-        : 'http://127.0.0.1:8000/api/v1/customers';
-      
+      const url = searchQuery
+        ? `${API_URL}/api/v1/customers?search=${encodeURIComponent(searchQuery)}`
+        : `${API_URL}/api/v1/customers`;
+
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
+
       if (!res.ok) throw new Error('Failed to fetch customers');
-      
+
       const data = await res.json();
       setCustomers(data);
     } catch (err) {
@@ -117,8 +118,8 @@ const CustomersPage = () => {
 
     const token = localStorage.getItem('token');
     const url = editingCustomer
-      ? `http://127.0.0.1:8000/api/v1/customers/${editingCustomer.id}`
-      : 'http://127.0.0.1:8000/api/v1/customers';
+      ? `${API_URL}/api/v1/customers/${editingCustomer.id}`
+      : `${API_URL}/api/v1/customers`;
     const method = editingCustomer ? 'PUT' : 'POST';
 
     try {
@@ -132,15 +133,15 @@ const CustomersPage = () => {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.detail || 'Failed to save customer');
       }
 
-      setNotification({ 
-        open: true, 
-        message: editingCustomer ? 'Customer updated successfully!' : 'Customer added successfully!', 
-        severity: 'success' 
+      setNotification({
+        open: true,
+        message: editingCustomer ? 'Customer updated successfully!' : 'Customer added successfully!',
+        severity: 'success'
       });
       handleCloseDialog();
       fetchCustomers();
@@ -154,7 +155,7 @@ const CustomersPage = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/customers/${id}`, {
+      const res = await fetch(`${API_URL}/api/v1/customers/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -280,9 +281,9 @@ const CustomersPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Chip 
-                        label={customer.loyalty_points} 
-                        color="secondary" 
+                      <Chip
+                        label={customer.loyalty_points}
+                        color="secondary"
                         size="small"
                       />
                     </TableCell>

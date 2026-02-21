@@ -34,10 +34,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             return response
             
         except Exception as e:
+            import traceback
             process_time = time.time() - start_time
+            error_traceback = traceback.format_exc()
             logger.error(
                 f"Error in {request.method} {request.url.path} - "
-                f"{str(e)} - Time: {process_time:.3f}s"
+                f"{str(e)} - Time: {process_time:.3f}s\n"
+                f"{error_traceback}"
             )
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
