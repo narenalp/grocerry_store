@@ -13,3 +13,5 @@ fastapi
 sqlalchemy
 passlib
 python-jose[cryptography]
+email-validator
+pydantic[email]
