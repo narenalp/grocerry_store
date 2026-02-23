@@ -50,6 +50,7 @@ app = FastAPI(
 from middleware import LoggingMiddleware
 app.add_middleware(LoggingMiddleware)
 
+#added by me 
 # Custom exception handler for validation errors
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
